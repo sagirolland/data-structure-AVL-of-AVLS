@@ -13,6 +13,8 @@ struct AVLNode
     int height_right;
     int bf = height_left - height_right;
     AVLNode* parent;
+    AVLNode* shared_ptr = nullptr;
+    int index = 0;
 
     AVLNode(T data,int info) : data(data), left(nullptr), right(nullptr), height_left(0),
     height_right(0), parent(nullptr), info(info)
