@@ -46,13 +46,52 @@ public:
 
     int get_info(AVLNode<T>* node) { return node->info; }
 
-    AVLNode<T> *insert(AVLNode<T> *node, T data, int info);
+    StatusType *insert(AVLNode<T> *node, T data, int info);
 
-    AVLNode<T> *remove(AVLNode<T> *node, T data, int info);
+    StatusType *remove(AVLNode<T> *node, T data);
 
-    AVLNode<T> *find(AVLNode<T> *node, T data, int info);
+    StatusType *find(AVLNode<T> *node, T data);
+
+    void rotate_left(AVLNode<T>* node);
+
+    void rotate_right(AVLNode<T>* node);
+    void rotate_RL(AVLNode<T>* node);
+    void rotate_RR(AVLNode<T>* node);
+    void rotate_LR(AVLNode<T>* node);
+    void rotate_LL(AVLNode<T>* node);
 };
 
+template <class T>
+class Playlist: public AVL<T>
+{
+private:
+    AVLNode<T> *root;
+    Playlist* next;
+public: 
+    Playlist(T ID){
+        Playlist* new_playlist = new Playlist();
+        new_playlist->root = this->new_node(ID, 1);
+    }
 
+    ~Playlist() {
+        delete root;
+    }
+};
 
+template <class T>
+class Song: public AVL<T>
+{
+private:
+    AVLNode<T> *root;
+    Song* next;
+public:
+    Song(T ID, int plays){
+        Song* new_song = new Song();
+        new_song->root = this->new_node(ID, plays);
+    }
+
+    ~Song() {
+        delete root;
+    }
+};
 #endif // AVL.h

@@ -15,7 +15,8 @@
 
 #include "wet1util.h"
 
-class DSpotify {
+class DSpotify : public AVL<StatusType>
+{
 private:
     //
     // Here you may add anything you want

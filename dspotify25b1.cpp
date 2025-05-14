@@ -2,10 +2,11 @@
 // However you need to implement all public DSpotify function, as provided below as a template
 
 #include "dspotify25b1.h"
+#include "AVL.h"
 
-
-DSpotify::DSpotify(){
-
+DSpotify::DSpotify()
+{
+    
 }
 
 DSpotify::~DSpotify(){
@@ -13,6 +14,7 @@ DSpotify::~DSpotify(){
 }
 
 StatusType DSpotify::add_playlist(int playlistId){ // new avl root info = 1  
+    
     return StatusType::FAILURE;
 }
 
