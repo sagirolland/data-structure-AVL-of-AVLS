@@ -21,8 +21,12 @@ struct AVLNode
     {}
 
     ~AVLNode() {
-        delete left;
-        delete right;
+        if (left != nullptr) {
+            delete left;
+        }
+        if (right != nullptr) {
+            delete right;
+        }
     }
 };
 
@@ -73,7 +77,7 @@ public:
         new_playlist->root = this->new_node(ID, 1);
     }
 
-    ~Playlist() {
+    ~Playlist() {//inorder delete
         delete root;
     }
 };
@@ -90,8 +94,7 @@ public:
         new_song->root = this->new_node(ID, plays);
     }
 
-    ~Song() {
-        delete root;
+    ~Song() {//inorder delete
     }
 };
 #endif // AVL.h

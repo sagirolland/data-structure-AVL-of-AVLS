@@ -9,6 +9,15 @@ AVLNode<T> *AVL<T>::new_node(T data, int info)
     {
         return StatusType::ALLOCATION_ERROR;
     }
+    if (data <= 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
+    if (info < 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
+
     return node;
 }
 
@@ -100,11 +109,67 @@ void AVL<T>::rotate_LL(AVLNode<T> *node)
 template <class T>
 StatusType *AVL<T>::insert(T data, int info)
 {
-   
+    AVLNode<T> *pointer = root;
+    if (data <= 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
+    if (info < 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
+
+    AVLNode<T> *node = new_node(data, info);
+    if (node == nullptr)
+    {
+        return StatusType::ALLOCATION_ERROR;
+    }
+    
+
+    if (find(data) == StatusType::SUCCESS)
+    {
+        return StatusType::FAILURE;
+    }
+
+    while (node != nullptr)
+    {
+        if (node->data < pointer->data)
+        {
+            if (pointer->left == nullptr)
+            {
+                pointer->left = node;
+                node->parent = pointer;
+                break;
+            }
+            
+            else
+            {
+                pointer = pointer->left;
+            }
+        }
+        else if (node->data > pointer->data)
+        {
+            if (pointer->right == nullptr)
+            {
+                pointer->right = node;
+                node->parent = pointer;
+                break;
+            }
+            else
+            {
+                pointer = pointer->right;
+            }
+        }
+        else
+        {
+            return StatusType::FAILURE;
+        }
+    }
+    return StatusType::SUCCESS;
 }
 
 template <class T>
-StatusType *AVL<T>::find( T data)
+StatusType *AVL<T>::find(T data)
 {
     AVLNode<T> *node = root;
     if (node == nullptr){
