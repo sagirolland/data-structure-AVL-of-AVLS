@@ -46,11 +46,11 @@ public:
 
     int get_info(AVLNode<T>* node) { return node->info; }
 
-    StatusType *insert(AVLNode<T> *node, T data, int info);
+    StatusType *insert( T data, int info);
 
-    StatusType *remove(AVLNode<T> *node, T data);
+    StatusType *remove( T data);
 
-    StatusType *find(AVLNode<T> *node, T data);
+    StatusType *find( T data);
 
     void rotate_left(AVLNode<T>* node);
 

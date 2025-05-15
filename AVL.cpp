@@ -2,12 +2,12 @@
 #include "AVL.h"
 
 template <class T>
-AVLNode<T>* AVL<T>::new_node(T data, int info)
+AVLNode<T> *AVL<T>::new_node(T data, int info)
 {
     AVLNode<T> *node = new AVLNode<T>(data, info);
     if (node == nullptr)
     {
-        throw std::bad_alloc();
+        return StatusType::ALLOCATION_ERROR;
     }
     return node;
 }
@@ -22,17 +22,63 @@ AVL<T>::~AVL()
 }
 
 template <class T>
-void AVL<T>::rotate_left(AVLNode<T>* node)
+void AVL<T>::rotate_left(AVLNode<T> *node)
 {
-    AVLNode<T>* Right->right = node->right->left;
-    node->right->parent = node->parent;
-    node->parent = node->right;
-    node->right=Right->right;
-    node->parent->left = node;
+    AVLNode<T> *Right = node->right;
+    if (Right == nullptr)
+    {
+        return StatusType::ALLOCATION_ERROR;
+    }
+    node->right = Right->left;
+    if (Right->left != nullptr)
+    {
+        Right->left->parent = node;
+    }
+    Right->parent = node->parent;
+    if (node->parent == nullptr)
+    {
+        root = Right;
+    }
+    else if (node == node->parent->left)
+    {
+        node->parent->left = Right;
+    }
+    else
+    {
+        node->parent->right = Right;
+    }
+    Right->left = node;
+    node->parent = Right;
 }
+
 template <class T>
 void AVL<T>::rotate_right(AVLNode<T> *node)
 {
+    AVLNode<T> *Left = node->left;
+    if (Left == nullptr)
+    {
+        return StatusType::ALLOCATION_ERROR;
+    }
+    node->left = Left->right;
+    if (Left->right != nullptr)
+    {
+        Left->right->parent = node;
+    }
+    Left->parent = node->parent;
+    if (node->parent == nullptr)
+    {
+        root = Left;
+    }
+    else if (node == node->parent->right)
+    {
+        node->parent->right = Left;
+    }
+    else
+    {
+        node->parent->left = Left;
+    }
+    Left->right = node;
+    node->parent = Left;
 }
 template <class T>
 void AVL<T>::rotate_RL(AVLNode<T> *node)
@@ -52,18 +98,31 @@ void AVL<T>::rotate_LL(AVLNode<T> *node)
 }
 
 template <class T>
-StatusType *AVL<T>::insert(AVLNode<T>* node,T data, int info)
+StatusType *AVL<T>::insert(T data, int info)
 {
-    if (node == nullptr)
-    {
-        return StatusType::FAILURE;
+   
+}
+
+template <class T>
+StatusType *AVL<T>::find( T data)
+{
+    AVLNode<T> *node = root;
+    if (node == nullptr){
+        return StatusType::ALLOCATION_ERROR;
     }
-    if(root->data < data)
+    while (node != nullptr)
     {
+        if (node->data == data){
+            return StatusType::SUCCESS;
+        }
+
+        if (node->data > data){
+            node = node->left;
+        }
+        else{
+            node = node->right;
+        }
+    }
     
-    }
-    if (root->data > data)
-    {
-        
-    }
+    return StatusType::FAILURE;
 }
