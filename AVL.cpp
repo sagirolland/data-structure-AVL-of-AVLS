@@ -24,9 +24,18 @@ AVLNode<T> *AVL<T>::new_node(T data, int info)
 template <class T>
 AVL<T>::~AVL()
 {
-    while (condition)
+    if (root == nullptr)
     {
-        /* code */
+        return;
+    }
+    if (root->left != nullptr)
+    {
+        ~AVL(root->left);
+    }
+    delete root;
+    if (root->right != nullptr)
+    {
+        ~AVL(root->right);
     }
 }
 
@@ -192,8 +201,8 @@ StatusType AVL<T>::insert(T data, int info)
     {
         return StatusType::ALLOCATION_ERROR;
     }
-
-    if (find(data) == StatusType::SUCCESS)
+    AVLNode<T> *search = find(data);
+    if (search == nullptr)
     {
         return StatusType::FAILURE;
     }
@@ -246,7 +255,7 @@ StatusType AVL<T>::insert(T data, int info)
 }
 
 template <class T>
-StatusType AVL<T>::find(T data)
+AVLNode<T> *AVL<T>::find(T data)
 {
     AVLNode<T> *node = root;
     if (node == nullptr)
@@ -269,18 +278,71 @@ StatusType AVL<T>::find(T data)
             node = node->right;
         }
     }
-
-    return StatusType::FAILURE;
+    return node;
 }
 
 template <class T>
 StatusType AVL<T>::remove(T data)
 {
-
+    if (data <= 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
+    if (root == nullptr)
+    {
+        return StatusType::ALLOCATION_ERROR;
+    }
+    AVLNode<T> *node = find(data);
+    if (node == nullptr)
+    {
+        return StatusType::FAILURE;
+    }
+    if (node->left == nullptr && node->right == nullptr)
+    {
+        AVLNode<T> *parent = node->parent;
+        delete node;
+        rebalance(parent);
+        return StatusType::SUCCESS;
+    }
+    if (node->parent == nullptr)
+    {
+        delete node;
+    }
+    if (node->parent->left == node)
+    {
+        AVLNode<T> *parent = node->parent;
+        if (node->left == nullptr)
+        {
+            node->right->parent = parent;
+            parent->left = node->right;
+        }
+        if (node->right == nullptr)
+        {
+            node->left->parent = parent;
+            parent->left = node->left;
+        }
+    }
+    if (node->parent->right == node)
+    {
+        AVLNode<T> *parent = node->parent;
+        if (node->left == nullptr)
+        {
+            node->right->parent = parent;
+            parent->right = node->right;
+        }
+        if (node->right == nullptr)
+        {
+            node->left->parent = parent;
+            parent->right = node->left;
+        }
+    }
+    delete node;
+    rebalance(parent);
+    return StatusType::SUCCESS;
 }
 
 template <class T>
-T* AVL<T>::inorder(AVLNode<T> *root, T *array)
+T *AVL<T>::inorder(AVLNode<T> *root, T *array)
 {
     if (root == nullptr)
     {

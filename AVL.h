@@ -31,7 +31,9 @@ struct AVLNode
         {
             delete right;
         }
+        delete this;
     }
+
     T get_data(AVLNode<T> *node) { return node->data; }
 
     int get_info(AVLNode<T> *node) { return node->info; }
@@ -92,8 +94,8 @@ private:
 public:
     AVL() { root = nullptr; };
 
-    virtual ~AVL(); // postorder delete
-
+    virtual ~AVL(); 
+    
     AVLNode<T> *new_node(T data, int info);
 
     AVLNode<T> *get_root() { return root; }
@@ -106,7 +108,7 @@ public:
 
     StatusType remove(T data);
 
-    StatusType find(T data);
+    AVLNode<T>* find(T data);
 
     StatusType rotate_left(AVLNode<T> *node);
 
@@ -132,8 +134,20 @@ public:
     }
 
     ~Playlist()
-    { // inorder delete
-        delete root;
+    { 
+        if (root == nullptr)
+        {
+            return;
+        }
+        if (root->left != nullptr)
+        {
+            ~AVL(root->left);
+        }
+        delete
+        if (root->right != nullptr)
+        {
+            ~AVL(root->right);
+        }
     }
 };
 
@@ -152,7 +166,19 @@ public:
     }
 
     ~Song()
-    { // inorder delete
+    { 
+        if (root == nullptr)
+        {
+            return;
+        }
+        if (root->left != nullptr)
+        {
+            ~AVL(root->left);
+        }
+        delete if (root->right != nullptr)
+        {
+            ~AVL(root->right);
+        }
     }
 };
 #endif // AVL.h
