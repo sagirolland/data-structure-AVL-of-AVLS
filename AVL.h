@@ -42,7 +42,7 @@ struct AVLNode
     {
         if (node == nullptr)
         {
-            return StatusType::ALLOCATION_ERROR;
+            return 1;
         }
         if (node->height_left > node->height_right)
         {
@@ -68,7 +68,7 @@ struct AVLNode
     {
         if (node == nullptr)
         {
-            return StatusType::ALLOCATION_ERROR;
+            return 1;
         }
         return get_height(node->left) - get_height(node->right);
     }
@@ -93,7 +93,7 @@ public:
 
     T *inorder(AVLNode<T> *root, T *array);
 
-    StatusType rebalance(AVLNode<T> *node);
+    AVLNode<T> rebalance(AVLNode<T> *node);
 
     StatusType insert(T data, int info);
 
@@ -101,13 +101,13 @@ public:
 
     AVLNode<T> *find(T data);
 
-    StatusType rotate_left(AVLNode<T> *node);
+    AVLNode<T> rotate_left(AVLNode<T> *node);
 
-    StatusType rotate_right(AVLNode<T> *node);
-    StatusType rotate_RL(AVLNode<T> *node);
-    StatusType rotate_RR(AVLNode<T> *node);
-    StatusType rotate_LR(AVLNode<T> *node);
-    StatusType rotate_LL(AVLNode<T> *node);
+    AVLNode<T> rotate_right(AVLNode<T> *node);
+    AVLNode<T> rotate_RL(AVLNode<T> *node);
+    AVLNode<T> rotate_RR(AVLNode<T> *node);
+    AVLNode<T> rotate_LR(AVLNode<T> *node);
+    AVLNode<T> rotate_LL(AVLNode<T> *node);
     void update_height(AVLNode<T> *node);
 };
 
@@ -116,16 +116,15 @@ class Playlist : public AVL<T>
 {
 private:
     AVLNode<T> *root;
-    Playlist *next;
 
 public:
     Playlist(T ID)
     {
-        Playlist *new_playlist = new Playlist();
+        Playlist *new_playlist = new AVL();
         new_playlist->root = this->new_node(ID, 1);
     }
-
-    ~Playlist()
+    void destroy(root){AVL::destroy(root);}
+     ~Playlist()
     {
         if (root == nullptr)
         {
@@ -147,15 +146,13 @@ class Song : public AVL<T>
 {
 private:
     AVLNode<T> *root;
-    Song *next;
-
 public:
     Song(T ID, int plays)
     {
-        Song *new_song = new Song();
+        Song *new_song = new AVL();
         new_song->root = this->new_node(ID, plays);
     }
-
+    void destroy(root) { AVL::destroy(root); }
     ~Song()
     {
         if (root == nullptr)
