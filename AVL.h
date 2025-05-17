@@ -72,17 +72,6 @@ struct AVLNode
         }
         return get_height(node->left) - get_height(node->right);
     }
-
-    void update_height(AVLNode<T> *node)
-    {
-        if (node == nullptr)
-        {
-            return StatusType::ALLOCATION_ERROR;
-        }
-        node->height_left = get_height(node->left);
-        node->height_right = get_height(node->right);
-        node->bf = get_bf(node);
-    }
 };
 
 template <class T>
@@ -94,8 +83,10 @@ private:
 public:
     AVL() { root = nullptr; };
 
-    virtual ~AVL(); 
-    
+    virtual ~AVL();
+
+    void destroy(AVLNode<T> *node);
+
     AVLNode<T> *new_node(T data, int info);
 
     AVLNode<T> *get_root() { return root; }
@@ -108,7 +99,7 @@ public:
 
     StatusType remove(T data);
 
-    AVLNode<T>* find(T data);
+    AVLNode<T> *find(T data);
 
     StatusType rotate_left(AVLNode<T> *node);
 
@@ -117,6 +108,7 @@ public:
     StatusType rotate_RR(AVLNode<T> *node);
     StatusType rotate_LR(AVLNode<T> *node);
     StatusType rotate_LL(AVLNode<T> *node);
+    void update_height(AVLNode<T> *node);
 };
 
 template <class T>
@@ -134,7 +126,7 @@ public:
     }
 
     ~Playlist()
-    { 
+    {
         if (root == nullptr)
         {
             return;
@@ -143,8 +135,7 @@ public:
         {
             ~AVL(root->left);
         }
-        delete
-        if (root->right != nullptr)
+        delete if (root->right != nullptr)
         {
             ~AVL(root->right);
         }
@@ -166,7 +157,7 @@ public:
     }
 
     ~Song()
-    { 
+    {
         if (root == nullptr)
         {
             return;

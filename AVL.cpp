@@ -22,21 +22,33 @@ AVLNode<T> *AVL<T>::new_node(T data, int info)
 }
 
 template <class T>
-AVL<T>::~AVL()
+void AVL<T>::destroy(AVLNode<T> *node)
 {
-    if (root == nullptr)
+    if (node == nullptr)
     {
         return;
     }
-    if (root->left != nullptr)
+    destroy(node->left);
+    destroy(node->right);
+    delete node;
+}
+
+template <class T>
+AVL<T>::~AVL()
+{
+    destroy(root);
+}
+
+template <class T>
+void AVL<T>::update_height(AVLNode<T> *node)
+{
+    if (node == nullptr)
     {
-        ~AVL(root->left);
+        return StatusType::ALLOCATION_ERROR;
     }
-    delete root;
-    if (root->right != nullptr)
-    {
-        ~AVL(root->right);
-    }
+    node->height_left = get_height(node->left);
+    node->height_right = get_height(node->right);
+    node->bf = get_bf(node);
 }
 
 template <class T>
@@ -156,7 +168,7 @@ StatusType AVL<T>::rebalance(AVLNode<T> *node)
 
         if (bf == 2)
         {
-            if (current->left->bf = > 0)
+            if (current->left->bf && current->left >= 0)
             {
                 rotate_LL(current);
             }
@@ -167,13 +179,13 @@ StatusType AVL<T>::rebalance(AVLNode<T> *node)
         }
         else if (current->bf == -2)
         {
-            if (current->right->bf <= 0)
+            if (current->right->bf && current->right <= 0)
             {
-                rotate_RR(parent);
+                rotate_RR(current);
             }
             else
             {
-                rotate_RL(parent);
+                rotate_RL(current);
             }
         }
         else
@@ -181,6 +193,7 @@ StatusType AVL<T>::rebalance(AVLNode<T> *node)
             current = current->parent;
         }
     }
+    return StatusType::SUCCESS;
 }
 
 template <class T>
@@ -202,7 +215,7 @@ StatusType AVL<T>::insert(T data, int info)
         return StatusType::ALLOCATION_ERROR;
     }
     AVLNode<T> *search = find(data);
-    if (search == nullptr)
+    if (search != nullptr)
     {
         return StatusType::FAILURE;
     }
