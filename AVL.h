@@ -7,14 +7,13 @@ struct AVLNode
 {
     T data;
     int info = 0;
+    int index = 0;
     AVLNode *left;
     AVLNode *right;
+    AVLNode *parent;
     int height_left;
     int height_right;
     int bf = height_left - height_right;
-    AVLNode *parent;
-    AVLNode *shared_ptr = nullptr;
-    int index = 0;
 
     AVLNode(T data, int info) : data(data), left(nullptr), right(nullptr), height_left(0),
                                 height_right(0), parent(nullptr), info(info)
@@ -112,40 +111,35 @@ public:
 };
 
 template <class T>
-class Playlist : public AVL<T>
+class Playlist : public AVLNode<T>
 {
 private:
-    AVLNode<T> *root;
-
+    AVL<T> *playlist_songs;
+    T id;
 public:
-    Playlist(T ID)
+    Playlist(T ID) : AVLNode<T>(ID, 0), playlist_songs(new AVL<int>()) {}
+    ~Playlist()
     {
-        Playlist *new_playlist = new AVL();
-        new_playlist->root = this->new_node(ID, 1);
+        delete playlist_songs;
     }
-    void destroy(root){AVL::destroy(root);}
-     ~Playlist()
+    bool operator<(const Playlist &other) const
     {
-        if (root == nullptr)
-        {
-            return;
-        }
-        if (root->left != nullptr)
-        {
-            ~AVL(root->left);
-        }
-        delete if (root->right != nullptr)
-        {
-            ~AVL(root->right);
-        }
+        return id < other.id;
     }
+
+    bool operator==(const Playlist &other) const
+    {
+        return id == other.id;
+    }
+    AVL<T> *get_songs_tree() const { return playlist_songs; }
 };
 
 template <class T>
-class Song : public AVL<T>
+class Song : public AVLNode<T>
 {
 private:
     AVLNode<T> *root;
+
 public:
     Song(T ID, int plays)
     {

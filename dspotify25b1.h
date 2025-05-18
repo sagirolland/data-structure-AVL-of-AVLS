@@ -15,11 +15,11 @@
 
 #include "wet1util.h"
 
-class DSpotify : public AVL<int>
+class DSpotify
 {
 private:
-    Playlist<int> *root;
-    Song<int> *song_root;
+    AVL<Playlist<int>> *playlist_root;
+    AVL<int> *song_root;
     
 public:
     // <DO-NOT-MODIFY> {
