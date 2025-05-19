@@ -10,12 +10,14 @@ DSpotify::DSpotify()
     playlist_root = new AVL<Playlist<int>>();
 }
 
-DSpotify::~DSpotify(){
+DSpotify::~DSpotify()
+{
     delete song_root;
     delete playlist_root;
 }
 
-StatusType DSpotify::add_playlist(int playlistId){ // new avl root info = 1  
+StatusType DSpotify::add_playlist(int playlistId)
+{ // new avl root info = 1
     if (playlistId <= 0)
     {
         return StatusType::INVALID_INPUT;
@@ -37,11 +39,15 @@ StatusType DSpotify::add_playlist(int playlistId){ // new avl root info = 1
         delete node;
         return StatusType::FAILURE;
     }
-
-    return res;
+    if (res == StatusType::SUCCESS)
+    {
+        playlist_root->get_root()->info = 1;
+    }
+        return res;
 }
 
-StatusType DSpotify::delete_playlist(int playlistId){
+StatusType DSpotify::delete_playlist(int playlistId)
+{
     if (playlistId <= 0)
     {
         return StatusType::INVALID_INPUT;
@@ -54,7 +60,8 @@ StatusType DSpotify::delete_playlist(int playlistId){
     return StatusType::SUCCESS;
 }
 
-StatusType DSpotify::add_song(int songId, int plays){ // shared ptr to playlist = nullptr index = 0
+StatusType DSpotify::add_song(int songId, int plays)
+{
     if (songId <= 0 || plays < 0)
     {
         return StatusType::INVALID_INPUT;
@@ -79,8 +86,8 @@ StatusType DSpotify::add_song(int songId, int plays){ // shared ptr to playlist 
 }
 
 StatusType DSpotify::add_to_playlist(int playlistId, int songId)
-{ 
-    if(playlistId <= 0 || songId <= 0)
+{
+    if (playlistId <= 0 || songId <= 0)
     {
         return StatusType::INVALID_INPUT;
     }
@@ -92,72 +99,133 @@ StatusType DSpotify::add_to_playlist(int playlistId, int songId)
         return StatusType::FAILURE;
     }
 
-    AVLNode<Playlist<int>>* playlist = playlist_root->find(playlistId);
+    AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
     if (playlist == nullptr)
     {
         return StatusType::FAILURE;
     }
 
-    Playlist<int> *playlist_node = &playlist->data;
-    
-    if (playlist_node->get_songs_tree()->find(songId) != nullptr)
+    Playlist<int> *song_in_playlist_node = &playlist->data;
+
+    if (song_in_playlist_node->get_songs_tree()->find(songId) != nullptr)
     {
         return StatusType::FAILURE;
     }
 
-    playlist->info++;
-    search->index++;
-
-    return playlist_node->get_songs_tree()->insert(songId, 0);
+    StatusType res = song_in_playlist_node->get_songs_tree()->insert(songId, 0);
+    if (res != StatusType::SUCCESS)
+    {
+        return StatusType::FAILURE;
+    }
+    else if (res == StatusType::SUCCESS)
+    {
+        song_in_playlist_node->playlist_refers++;
+        playlist->info++;
+    }
+    return res;
 }
 
-StatusType DSpotify::delete_song(int songId){
-    // find song in song avl tree
-    // if song is in a playlist, return failure:
-    // if song->shared_ptr != nullptr, and song->index != 0 return failure
-    // else delete song from avl tree
-    return StatusType::FAILURE;
+StatusType DSpotify::delete_song(int songId)
+{
+    if (songId <= 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
+    AVLNode<int> *search = song_root->find(songId);
+    if (search == nullptr)
+    {
+        return StatusType::FAILURE;
+    }
+    if (search->playlist_refers > 0)
+    {
+        return StatusType::FAILURE;
+    }
+    return song_root->remove(songId);
 }
 
-StatusType DSpotify::remove_from_playlist(int playlistId, int songId){
-    // if sucssesfull delete avlnode from playlist, playlist root info = -1
+StatusType DSpotify::remove_from_playlist(int playlistId, int songId)
+{
+    if (playlistId <= 0 || songId <= 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
     AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
-    if (&playlist == nullptr)
+    if (playlist == nullptr)
     {
         return StatusType::FAILURE;
     }
     AVLNode<int> *search = song_root->find(songId);
-    if (song_root->remove(songId) == StatusType::FAILURE)
+    if (search == nullptr)
     {
         return StatusType::FAILURE;
     }
-    search->info--;
-    return StatusType::SUCCESS;
+    Playlist<int> *playlist_node = &playlist->data;
+    StatusType res = playlist_node->get_songs_tree()->remove(songId);
+    if (res != StatusType::SUCCESS)
+    {
+        return StatusType::FAILURE;
+    }
+    else if (res == StatusType::SUCCESS)
+    {
+        playlist_node->playlist_refers--;
+        playlist->info--;
+    }
+    
+    return res;
 }
 
-output_t<int> DSpotify::get_plays(int songId){
+output_t<int> DSpotify::get_plays(int songId)
+{
+    if (songId <= 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
     AVLNode<int> *search = song_root->find(songId);
+    if (search == nullptr)
+    {
+        return StatusType::FAILURE;
+    }
     return search->info;
     return StatusType::SUCCESS;
 }
 
-output_t<int> DSpotify::get_num_songs(int playlistId){
+output_t<int> DSpotify::get_num_songs(int playlistId)
+{
+    if (playlistId <= 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
     AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
+    if (playlist == nullptr)
+    {
+        return StatusType::FAILURE;
+    }
     return playlist->info;
     return StatusType::SUCCESS;
 }
 
-output_t<int> DSpotify::get_by_plays(int playlistId, int plays){
+output_t<int> DSpotify::get_by_plays(int playlistId, int plays)
+{
+    if (playlistId <= 0 || plays < 0)
+    {
+        return StatusType::INVALID_INPUT;
+    }
     AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
-    if (&playlist == nullptr)
+    if (playlist == nullptr)
     {
         return StatusType::FAILURE;
     }
-    AVLNode<int> *search = song_root->find(plays);
-    return search->info;
+    AVL<int> *song = playlist->data.get_songs_tree();
+    AVLNode<int> *search = song->find_by_info_ceiling(song->get_root(), plays);
+    if (search == nullptr)
+    {
+        return StatusType::FAILURE;
+    }
+    return search->data;
     return StatusType::SUCCESS;
 }
 
-StatusType DSpotify::unite_playlists(int playlistId1, int playlistId2){
+StatusType DSpotify::unite_playlists(int playlistId1, int playlistId2)
+{
     return StatusType::FAILURE;
 }

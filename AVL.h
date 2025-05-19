@@ -7,7 +7,7 @@ struct AVLNode
 {
     T data;
     int info = 0;
-    int index = 0;
+    int playlist_refers = 0;
     AVLNode *left;
     AVLNode *right;
     AVLNode *parent;
@@ -15,8 +15,8 @@ struct AVLNode
     int height_right;
     int bf = height_left - height_right;
 
-    AVLNode(T data, int info) : data(data), left(nullptr), right(nullptr), height_left(0),
-                                height_right(0), parent(nullptr), info(info)
+    AVLNode(T data, int info) : data(data), info(info), left(nullptr), right(nullptr), height_left(0),
+                                height_right(0), parent(nullptr)
     {
     }
 
@@ -99,14 +99,15 @@ public:
     StatusType remove(T data);
 
     AVLNode<T> *find(T data);
+    AVLNode<int> *find_by_info_ceiling(AVLNode<int> *node, int plays);
 
-    AVLNode<T> rotate_left(AVLNode<T> *node);
-
+        AVLNode<T> rotate_left(AVLNode<T> *node);
     AVLNode<T> rotate_right(AVLNode<T> *node);
     AVLNode<T> rotate_RL(AVLNode<T> *node);
     AVLNode<T> rotate_RR(AVLNode<T> *node);
     AVLNode<T> rotate_LR(AVLNode<T> *node);
     AVLNode<T> rotate_LL(AVLNode<T> *node);
+
     void update_height(AVLNode<T> *node);
 };
 
@@ -117,7 +118,7 @@ private:
     AVL<T> *playlist_songs;
     T id;
 public:
-    Playlist(T ID) : AVLNode<T>(ID, 0), playlist_songs(new AVL<int>()) {}
+    Playlist(T ID) : id(ID), playlist_songs(new AVL<int>()) {}
     ~Playlist()
     {
         delete playlist_songs;
@@ -132,6 +133,7 @@ public:
         return id == other.id;
     }
     AVL<T> *get_songs_tree() const { return playlist_songs; }
+    T get_id() const { return id; }
 };
 
 template <class T>
@@ -139,7 +141,8 @@ class Song : public AVLNode<T>
 {
 private:
     AVLNode<T> *root;
-
+    T id;
+    int plays;
 public:
     Song(T ID, int plays)
     {
@@ -161,6 +164,15 @@ public:
         {
             ~AVL(root->right);
         }
+    }
+    // < operator for get by plays 
+    bool operator<(const Song &other) const
+    {
+        return plays < other.plays || (plays == other.plays && id < other.id);
+    }
+    bool operator==(const Song &other) const
+    {
+        return id == other.id && plays == other.plays;
     }
 };
 #endif // AVL.h

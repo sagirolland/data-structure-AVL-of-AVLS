@@ -31,6 +31,28 @@ AVL<T>::~AVL()
     destroy(root);
 }
 
+AVLNode<int> *find_by_info_ceiling(AVLNode<int> *node, int plays)
+{
+    AVLNode<int>* res = nullptr;
+    while (node != nullptr)
+    {
+        if (node->info == plays)
+        {
+            return node;
+        }
+        if (node->info > plays)
+        {
+            res = node;
+            node = node->left;
+        }
+        else
+        {
+            node = node->right;
+        }
+    }
+    return res;
+}
+
 template <class T>
 void AVL<T>::update_height(AVLNode<T> *node)
 {
@@ -350,7 +372,7 @@ T *AVL<T>::inorder(AVLNode<T> *root, T *array)
     {
         inorder(root->left, array);
     }
-    array[root->index] = root->data;
+    array[root->data] = root->data;
     if (root->right != nullptr)
     {
         inorder(root->right, array);
