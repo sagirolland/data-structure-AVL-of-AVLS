@@ -162,15 +162,6 @@ public:
     int insert(T data, int info)
     {
         AVLNode<T> *pointer = root;
-        if (data <= 0)
-        {
-            return 0;
-        }
-        if (info < 0)
-        {
-            return 0;
-        }
-
         AVLNode<T> *node = new_node(data, info);
         if (node == nullptr)
         {
