@@ -31,7 +31,8 @@ AVL<T>::~AVL()
     destroy(root);
 }
 
-AVLNode<int> *find_by_info_ceiling(AVLNode<int> *node, int plays)
+template<class T>
+AVLNode<T>* AVL<T>::find_by_info_ceiling(AVLNode<int> *node, int plays)
 {
     AVLNode<int>* res = nullptr;
     while (node != nullptr)
@@ -54,7 +55,7 @@ AVLNode<int> *find_by_info_ceiling(AVLNode<int> *node, int plays)
 }
 
 template <class T>
-void AVL<T>::update_height(AVLNode<T> *node)
+void AVLNode<T>::update_height(AVLNode<T> *node)
 {
     if (node == nullptr)
     {
@@ -376,5 +377,71 @@ T *AVL<T>::inorder(AVLNode<T> *root, T *array)
     if (root->right != nullptr)
     {
         inorder(root->right, array);
+    }
+}
+
+template <class T>
+void mergeAVLTools<T>::tree2list(AVLNode<T>* node, linkedListNode<T>*& head, linkedListNode<T>*& tail)
+{
+    if (node == nullptr)
+    {
+        return;
+    }
+    tree2list(node->left, head, tail);
+    linkedListNode<T>* new_node = new linkedListNode<T>(node->data);
+    if (head == nullptr)
+    {
+        head = new_node;
+        tail = new_node;
+    }
+    else
+    {
+        tail->next = new_node;
+        tail = new_node;
+    }
+    tree2list(node->right, head, tail);
+}
+
+template <class T>
+int mergeAVLTools<T>::listSize(linkedListNode<T>* head)
+{
+    int size = 0;
+    while (head)
+    {
+        size++;
+        head = head->next;
+    }
+    return size;    
+}
+
+template <class T>
+AVLNode<T>* mergeAVLTools<T>::list2tree(linkedListNode<T>* head, int size)
+{
+    if (size<=0 || head == nullptr)
+    {
+        return nullptr;
+    }
+    AVLNode<T>* left = list2tree(head, size/2);
+    AVLNode<T>* root = new AVLNode<T>(head->data,0);
+    head = head->next;
+    AVLNode<T>* right = list2tree(head, size - size/2 - 1);
+    root->left = left;
+    root->right = right;
+    root->update_height(root);
+    return root;
+}
+
+template <class T>
+void mergeAVLTools<T>::add_to_list(linkedListNode<T>*& head, linkedListNode<T>*& tail, linkedListNode<int>*& node)
+{
+    if (head == nullptr)
+    {
+        head = node;
+        tail = node;
+    }
+    else
+    {
+        tail->next = node;
+        tail = node;
     }
 }

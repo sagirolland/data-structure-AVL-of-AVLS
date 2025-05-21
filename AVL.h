@@ -32,6 +32,7 @@ struct AVLNode
         }
         delete this;
     }
+    void update_height(AVLNode<T> *node);
 
     T get_data(AVLNode<T> *node) { return node->data; }
 
@@ -89,6 +90,7 @@ public:
     AVLNode<T> *new_node(T data, int info);
 
     AVLNode<T> *get_root() { return root; }
+    void set_root(AVLNode<T> *node) { root = node; }
 
     T *inorder(AVLNode<T> *root, T *array);
 
@@ -99,16 +101,15 @@ public:
     StatusType remove(T data);
 
     AVLNode<T> *find(T data);
-    AVLNode<int> *find_by_info_ceiling(AVLNode<int> *node, int plays);
+    AVLNode<T> *find_by_info_ceiling(AVLNode<int> *node, int plays);
 
-        AVLNode<T> rotate_left(AVLNode<T> *node);
+    AVLNode<T> rotate_left(AVLNode<T> *node);
     AVLNode<T> rotate_right(AVLNode<T> *node);
     AVLNode<T> rotate_RL(AVLNode<T> *node);
     AVLNode<T> rotate_RR(AVLNode<T> *node);
     AVLNode<T> rotate_LR(AVLNode<T> *node);
     AVLNode<T> rotate_LL(AVLNode<T> *node);
 
-    void update_height(AVLNode<T> *node);
 };
 
 template <class T>
@@ -133,6 +134,7 @@ public:
         return id == other.id;
     }
     AVL<T> *get_songs_tree() const { return playlist_songs; }
+    AVL<T> *set_songs_tree(AVL<T>* node) {return node.get_songs_tree()}
     T get_id() const { return id; }
 };
 
@@ -175,4 +177,25 @@ public:
         return id == other.id && plays == other.plays;
     }
 };
+
+template <class T>
+struct linkedListNode
+{
+    T data;
+    linkedListNode *next;
+
+    linkedListNode(T data) : data(data), next(nullptr) {}
+};
+
+template <class T>
+class mergeAVLTools
+{
+    public:
+    static void tree2list(AVLNode<T>* node, linkedListNode<T>*& head, linkedListNode<T>*& tail);
+    static int listSize(linkedListNode<T>* head);
+    static AVLNode<T>* list2tree(linkedListNode<T>* head, int size);
+    static void add_to_list(linkedListNode<T>*& head, linkedListNode<T>*& tail, linkedListNode<int>*& node);
+};
+
+
 #endif // AVL.h
