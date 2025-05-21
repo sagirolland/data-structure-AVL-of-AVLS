@@ -1,4 +1,3 @@
-#include "dspotify25b1.h"
 #include "AVL.h"
 
 template <class T>
@@ -59,7 +58,7 @@ void AVLNode<T>::update_height(AVLNode<T> *node)
 {
     if (node == nullptr)
     {
-        return StatusType::ALLOCATION_ERROR;
+        return;
     }
     node->height_left = get_height(node->left);
     node->height_right = get_height(node->right);
@@ -72,7 +71,7 @@ AVLNode<T> AVL<T>::rotate_left(AVLNode<T> *node)
     AVLNode<T> *Right = node->right;
     if (Right == nullptr)
     {
-        return StatusType::ALLOCATION_ERROR;
+        return nullptr;
     }
     node->right = Right->left;
     if (Right->left != nullptr)
@@ -104,7 +103,7 @@ AVLNode<T> AVL<T>::rotate_right(AVLNode<T> *node)
     AVLNode<T> *Left = node->left;
     if (Left == nullptr)
     {
-        return StatusType::ALLOCATION_ERROR;
+        return nullptr;
     }
     node->left = Left->right;
     if (Left->right != nullptr)
@@ -135,7 +134,7 @@ AVLNode<T> AVL<T>::rotate_RL(AVLNode<T> *node)
 {
     if (node == nullptr)
     {
-        return StatusType::ALLOCATION_ERROR;
+        return nullptr;
     }
     rotate_right(node->right);
     rotate_left(node);
@@ -146,7 +145,7 @@ AVLNode<T> AVL<T>::rotate_RR(AVLNode<T> *node)
 {
     if (node == nullptr)
     {
-        return StatusType::ALLOCATION_ERROR;
+        return nullptr;
     }
     rotate_left(node);
 }
@@ -156,7 +155,7 @@ AVLNode<T> AVL<T>::rotate_LR(AVLNode<T> *node)
 {
     if (node == nullptr)
     {
-        return StatusType::ALLOCATION_ERROR;
+        return nullptr;
     }
     rotate_left(node->left);
     rotate_right(node);
@@ -167,7 +166,7 @@ AVLNode<T> AVL<T>::rotate_LL(AVLNode<T> *node)
 {
     if (node == nullptr)
     {
-        return StatusType::ALLOCATION_ERROR;
+        return nullptr;
     }
     rotate_right(node);
 }
@@ -208,37 +207,37 @@ AVLNode<T> AVL<T>::rebalance(AVLNode<T> *node)
             current = current->parent;
         }
     }
-    return StatusType::SUCCESS;
+    return node;
 }
 
 template <class T>
-StatusType AVL<T>::insert(T data, int info)
+int AVL<T>::insert(T data, int info)
 {
     AVLNode<T> *pointer = root;
     if (data <= 0)
     {
-        return StatusType::INVALID_INPUT;
+        return 0;
     }
     if (info < 0)
     {
-        return StatusType::INVALID_INPUT;
+        return 0;
     }
 
     AVLNode<T> *node = new_node(data, info);
     if (node == nullptr)
     {
-        return StatusType::ALLOCATION_ERROR;
+        return 0;
     }
     AVLNode<T> *search = find(data);
     if (search != nullptr)
     {
-        return StatusType::FAILURE;
+        return 0;
     }
 
     if (root == nullptr)
     {
         root = node;
-        return StatusType::SUCCESS;
+        return 1;
     }
 
     while (1)
@@ -273,13 +272,13 @@ StatusType AVL<T>::insert(T data, int info)
         else
         {
             delete node;
-            return StatusType::FAILURE;
+            return 0;
         }
     }
 
     rebalance(node);
 
-    return StatusType::SUCCESS;
+    return 1;
 }
 
 template <class T>
@@ -288,13 +287,13 @@ AVLNode<T> *AVL<T>::find(T data)
     AVLNode<T> *node = root;
     if (node == nullptr)
     {
-        return StatusType::ALLOCATION_ERROR;
+        return nullptr;
     }
     while (node != nullptr)
     {
         if (node->data == data)
         {
-            return StatusType::SUCCESS;
+            return node;
         }
 
         if (node->data > data)
@@ -310,24 +309,24 @@ AVLNode<T> *AVL<T>::find(T data)
 }
 
 template <class T>
-StatusType AVL<T>::remove(T data)
+int AVL<T>::remove(T data)
 { 
     AVLNode<T> *node = find(data);
     if (node == nullptr)
     {
-        return;
+        return 0;
     }
     if (node->left == nullptr && node->right == nullptr)
     {
         AVLNode<T> *parent = node->parent;
         delete node;
         rebalance(parent);
-        return StatusType::SUCCESS;
+        return 0;
     }
     if (node->parent == nullptr)
     {
         delete node;
-        return statusType::failure;
+        return 0;
     }
     if (node->parent->left == node)
     {
@@ -359,7 +358,7 @@ StatusType AVL<T>::remove(T data)
     }
     rebalance(node->parent);
     delete node;
-    return StatusType::SUCCESS;
+    return 1;
 }
 
 template <class T>
@@ -414,7 +413,7 @@ AVLNode<T>* mergeAVLTools<T>::list2tree(linkedListNode<T>* head, int size)
 }
 
 template <class T>
-void mergeAVLTools<T>::add_to_list(linkedListNode<T>*& head, linkedListNode<T>*& tail, linkedListNode<int>*& node)
+void mergeAVLTools<T>::add_to_list(linkedListNode<T>*& head, linkedListNode<T>*& tail, linkedListNode<T>*& node)
 {
     if (head == nullptr)
     {

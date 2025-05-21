@@ -15,6 +15,11 @@
 
 #include "wet1util.h"
 
+template <class T>
+class AVL;
+template <class T>
+class Playlist;
+
 class DSpotify
 {
 private:

@@ -33,17 +33,17 @@ StatusType DSpotify::add_playlist(int playlistId)
     {
         return StatusType::ALLOCATION_ERROR;
     }
-    StatusType res = playlist_root->insert(playlistId, 0);
-    if (res != StatusType::SUCCESS)
+    int res = playlist_root->insert(playlistId, 0);
+    if (res != 1)
     {
         delete node;
         return StatusType::FAILURE;
     }
-    if (res == StatusType::SUCCESS)
+    if (res == 1)
     {
         playlist_root->get_root()->info = 1;
     }
-    return res;
+    return StatusType::SUCCESS;
 }
 
 StatusType DSpotify::delete_playlist(int playlistId)
@@ -53,10 +53,9 @@ StatusType DSpotify::delete_playlist(int playlistId)
         return StatusType::INVALID_INPUT;
     }
     AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
-    if (&playlist == nullptr)
-    {
-        return StatusType::FAILURE;
-    }
+    if (playlist==nullptr){return StatusType::FAILURE;}
+    playlist_root->remove(playlistId);
+    delete playlist;
     return StatusType::SUCCESS;
 }
 
@@ -76,7 +75,7 @@ StatusType DSpotify::add_song(int songId, int plays)
     {
         return StatusType::ALLOCATION_ERROR;
     }
-    if (song_root->insert(songId, plays) != StatusType::SUCCESS)
+    if (song_root->insert(songId, plays) != 1)
     {
         delete node;
         return StatusType::FAILURE;
@@ -112,17 +111,17 @@ StatusType DSpotify::add_to_playlist(int playlistId, int songId)
         return StatusType::FAILURE;
     }
 
-    StatusType res = song_in_playlist_node->get_songs_tree()->insert(songId, 0);
-    if (res != StatusType::SUCCESS)
+    int res = song_in_playlist_node->get_songs_tree()->insert(songId, 0);
+    if (res != 1)
     {
         return StatusType::FAILURE;
     }
-    else if (res == StatusType::SUCCESS)
+    else if (res == 1)
     {
         song_in_playlist_node->playlist_refers++;
         playlist->info++;
     }
-    return res;
+    return StatusType::SUCCESS;
 }
 
 StatusType DSpotify::delete_song(int songId)
@@ -140,8 +139,14 @@ StatusType DSpotify::delete_song(int songId)
     {
         return StatusType::FAILURE;
     }
-    return song_root->remove(songId);
+    int res = song_root->remove(songId);
+    if (res != 1)
+    {
+        return StatusType::FAILURE;
+    }
+    return StatusType::SUCCESS;
 }
+
 
 StatusType DSpotify::remove_from_playlist(int playlistId, int songId)
 {
@@ -160,18 +165,18 @@ StatusType DSpotify::remove_from_playlist(int playlistId, int songId)
         return StatusType::FAILURE;
     }
     Playlist<int> *playlist_node = &playlist->data;
-    StatusType res = playlist_node->get_songs_tree()->remove(songId);
-    if (res != StatusType::SUCCESS)
+    int res = playlist_node->get_songs_tree()->remove(songId);
+    if (res != 1)
     {
         return StatusType::FAILURE;
     }
-    else if (res == StatusType::SUCCESS)
+    else if (res == 1)
     {
         playlist_node->playlist_refers--;
         playlist->info--;
     }
 
-    return res;
+    return StatusType::SUCCESS;
 }
 
 output_t<int> DSpotify::get_plays(int songId)
@@ -292,8 +297,8 @@ StatusType DSpotify::unite_playlists(int playlistId1, int playlistId2)
             {
                 global_song->playlist_refers--;
             }
-            head_p1->next;
-            head_p2->next;
+            head_p1 = head_p1->next;
+            head_p2 = head_p2->next;
         }
     }
 
