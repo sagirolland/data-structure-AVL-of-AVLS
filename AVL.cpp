@@ -363,24 +363,6 @@ StatusType AVL<T>::remove(T data)
 }
 
 template <class T>
-T *AVL<T>::inorder(AVLNode<T> *root, T *array)
-{
-    if (root == nullptr)
-    {
-        return StatusType::ALLOCATION_ERROR;
-    }
-    if (root->left != nullptr)
-    {
-        inorder(root->left, array);
-    }
-    array[root->data] = root->data;
-    if (root->right != nullptr)
-    {
-        inorder(root->right, array);
-    }
-}
-
-template <class T>
 void mergeAVLTools<T>::tree2list(AVLNode<T>* node, linkedListNode<T>*& head, linkedListNode<T>*& tail)
 {
     if (node == nullptr)

@@ -92,8 +92,6 @@ public:
     AVLNode<T> *get_root() { return root; }
     void set_root(AVLNode<T> *node) { root = node; }
 
-    T *inorder(AVLNode<T> *root, T *array);
-
     AVLNode<T> rebalance(AVLNode<T> *node);
 
     StatusType insert(T data, int info);
