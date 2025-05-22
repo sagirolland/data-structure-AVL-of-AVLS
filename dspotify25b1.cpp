@@ -27,21 +27,15 @@ StatusType DSpotify::add_playlist(int playlistId)
         return StatusType::FAILURE;
     }
 
-    Playlist<int> *node = new Playlist<int>(playlistId);
-
-    if (node == nullptr)
-    {
-        return StatusType::ALLOCATION_ERROR;
-    }
     int res = playlist_root->insert(playlistId, 0);
     if (res != 1)
     {
-        delete node;
         return StatusType::FAILURE;
     }
     if (res == 1)
     {
         playlist_root->get_root()->info = 1;
+        return StatusType::SUCCESS;
     }
     return StatusType::SUCCESS;
 }
@@ -55,7 +49,6 @@ StatusType DSpotify::delete_playlist(int playlistId)
     AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
     if (playlist==nullptr){return StatusType::FAILURE;}
     playlist_root->remove(playlistId);
-    delete playlist;
     return StatusType::SUCCESS;
 }
 
@@ -70,14 +63,9 @@ StatusType DSpotify::add_song(int songId, int plays)
         return StatusType::FAILURE;
     }
 
-    Song<int> *node = new Song<int>(songId, plays);
-    if (node == nullptr)
-    {
-        return StatusType::ALLOCATION_ERROR;
-    }
+    
     if (song_root->insert(songId, plays) != 1)
     {
-        delete node;
         return StatusType::FAILURE;
     }
 
@@ -319,12 +307,20 @@ StatusType DSpotify::unite_playlists(int playlistId1, int playlistId2)
     int new_tree_size = mergeAVLTools<int>::listSize(new_tree_head);
     AVLNode<int>* new_root = mergeAVLTools<int>::list2tree(new_tree_head,new_tree_size);
 
-    delete playlist1_songs;
     AVL<int>* new_tree = new AVL<int>();
     new_tree->set_root(new_root);
     p1.set_songs_tree(new_tree);
     playlist1->info += songs_from_p2;
+
+    p2.set_songs_tree(nullptr);
     playlist_root->remove(playlistId2);
-    delete playlist2_songs;
+
+    linkedListNode<int> *tmp = new_tree_head;
+    while (tmp)
+    {
+        linkedListNode<int> *next = tmp->next;
+        delete tmp;
+        tmp = next;
+    }
     return StatusType::SUCCESS;
 }

@@ -1,6 +1,5 @@
 #ifndef AVL_H_
 #define AVL_H_
-
 template <class T>
 struct AVLNode
 {
@@ -19,18 +18,8 @@ struct AVLNode
     {
     }
 
-    ~AVLNode()
-    {
-        if (left != nullptr)
-        {
-            delete left;
-        }
-        if (right != nullptr)
-        {
-            delete right;
-        }
-        delete this;
-    }
+    ~AVLNode() {}
+
     void update_height(AVLNode<T> *node)
     {
         if (node == nullptr)
@@ -50,7 +39,7 @@ struct AVLNode
     {
         if (node == nullptr)
         {
-            return 1;
+            return 0;
         }
         if (node->height_left > node->height_right)
         {
@@ -76,7 +65,7 @@ struct AVLNode
     {
         if (node == nullptr)
         {
-            return 1;
+            return 0;
         }
         return get_height(node->left) - get_height(node->right);
     }
@@ -120,43 +109,42 @@ public:
 
     AVLNode<T> *get_root() { return root; }
     void set_root(AVLNode<T> *node) { root = node; }
-    
-    AVLNode<T> rebalance(AVLNode<T> *node)
+
+    AVLNode<T> *rebalance(AVLNode<T> *node)
     {
         AVLNode<T> *current = node;
         while (current != nullptr)
         {
+           
             current->update_height(current);
             int bf = current->bf;
 
             if (bf == 2)
             {
-                if (current->left->bf && current->left >= 0)
+                if (current->left && current->left->bf >= 0)
                 {
-                    rotate_LL(current);
+                    current = rotate_LL(current);
                 }
-                else
+                else if (current->left)
                 {
-                    rotate_LR(current);
+                    current = rotate_LR(current);
                 }
             }
-            else if (current->bf == -2)
+            else if (bf == -2)
             {
-                if (current->right->bf && current->right <= 0)
+                if (current->right && current->right->bf <= 0)
                 {
-                    rotate_RR(current);
+                    current = rotate_RR(current);
                 }
-                else
+                else if (current->right)
                 {
-                    rotate_RL(current);
+                    current = rotate_RL(current);
                 }
             }
-            else
-            {
-                current = current->parent;
-            }
+
+            current = current->parent;
         }
-        return *node;
+        return node;
     }
 
     int insert(T data, int info)
@@ -227,49 +215,69 @@ public:
         {
             return 0;
         }
+        AVLNode<T> *parent = node->parent;
+
         if (node->left == nullptr && node->right == nullptr)
         {
-            AVLNode<T> *parent = node->parent;
+            if (parent)
+            {
+                if (parent->left == node)
+                {
+                    parent->left = nullptr;
+                }
+                else if (parent->right == node)
+                {
+                    parent->right = nullptr;
+                }
+            }
+            else
+            {
+                root = nullptr;
+            }
             delete node;
             rebalance(parent);
-            return 0;
+            return 1;
         }
-        if (node->parent == nullptr)
+
+        if (node->left == nullptr || node->right == nullptr)
         {
+
+            AVLNode<T> *child = (node->left) ? node->left : node->right;
+            if (parent)
+            {
+                if (parent->left == node)
+                {
+                    parent->left = child;
+                }
+                else
+                {
+                    parent->right = child;
+                }
+            }
+            else
+            {
+                root = child;
+            }
+            child->parent = parent;
             delete node;
-            return 0;
+            rebalance(parent);
+            return 1;
         }
-        if (node->parent->left == node)
+        if (node->left != nullptr && node->right != nullptr)
         {
-            AVLNode<T> *parent = node->parent;
-            if (node->left == nullptr)
+            AVLNode<T> *succ = node->right;
+            while (succ->left)
             {
-                node->right->parent = parent;
-                parent->left = node->right;
+                succ = succ->left;
             }
-            if (node->right == nullptr)
-            {
-                node->left->parent = parent;
-                parent->left = node->left;
-            }
+
+            node->data=succ->data;
+            node->info = succ->info;
+            remove(succ->data);
+            rebalance(node);
+            return 1;
         }
-        if (node->parent->right == node)
-        {
-            AVLNode<T> *parent = node->parent;
-            if (node->left == nullptr)
-            {
-                node->right->parent = parent;
-                parent->right = node->right;
-            }
-            if (node->right == nullptr)
-            {
-                node->left->parent = parent;
-                parent->right = node->left;
-            }
-        }
-        rebalance(node->parent);
-        delete node;
-        return 1;
+        return 0;
     }
 
     AVLNode<T> *find(T data)
@@ -319,12 +327,12 @@ public:
         return res;
     }
 
-    AVLNode<T>* rotate_left(AVLNode<T> *node)
+    AVLNode<T> *rotate_left(AVLNode<T> *node)
     {
         AVLNode<T> *Right = node->right;
         if (Right == nullptr)
         {
-            return nullptr;
+            return node;
         }
         node->right = Right->left;
         if (Right->left != nullptr)
@@ -348,14 +356,14 @@ public:
         node->parent = Right;
         node->update_height(node);
         Right->update_height(Right);
-        return node;
+        return Right;
     }
-    AVLNode<T>* rotate_right(AVLNode<T> *node)
+    AVLNode<T> *rotate_right(AVLNode<T> *node)
     {
         AVLNode<T> *Left = node->left;
         if (Left == nullptr)
         {
-            return nullptr;
+            return node;
         }
         node->left = Left->right;
         if (Left->right != nullptr)
@@ -379,65 +387,72 @@ public:
         node->parent = Left;
         node->update_height(node);
         Left->update_height(Left);
-        return node;
+        return Left;
     }
-    AVLNode<T>* rotate_RL(AVLNode<T> *node)
+    AVLNode<T> *rotate_RL(AVLNode<T> *node)
     {
         if (node == nullptr)
         {
             return nullptr;
         }
-        rotate_right(node->right);
-        rotate_left(node);
-        return node;
+        node->right = rotate_right(node->right);
+        if (node->right)
+        {
+            node->right->parent = node;
+        }
+        return rotate_left(node);
     }
-    AVLNode<T>* rotate_RR(AVLNode<T> *node)
+    AVLNode<T> *rotate_RR(AVLNode<T> *node)
     {
         if (node == nullptr)
         {
             return nullptr;
         }
-        rotate_left(node);
-        return node;
+
+        return rotate_left(node);
     }
-    AVLNode<T>* rotate_LR(AVLNode<T> *node)
+    AVLNode<T> *rotate_LR(AVLNode<T> *node)
     {
         if (node == nullptr)
         {
             return nullptr;
         }
-        rotate_left(node->left);
-        rotate_right(node);
-        return node;
+        node->left = rotate_left(node->left);
+        if (node->left)
+        {
+            node->left->parent = node;
+        }
+        return rotate_right(node);
     }
-    AVLNode<T>* rotate_LL(AVLNode<T> *node)
+    AVLNode<T> *rotate_LL(AVLNode<T> *node)
     {
         if (node == nullptr)
         {
             return nullptr;
         }
-        rotate_right(node);
-        return node;}
+
+        return rotate_right(node);
+    }
 };
 
 template <class T>
 class Playlist : public AVLNode<T>
 {
-private:
+public:
     T id;
     AVL<int> *playlist_root;
 
-public:
-    Playlist(T ID) : AVLNode<T>(ID, 0), id(ID), playlist_root(new AVL<T>()) {}
+    Playlist(T ID) : AVLNode<T>(ID, 0), id(ID), playlist_root(new AVL<int>()) {}
     ~Playlist()
     {
         delete playlist_root;
+        playlist_root = nullptr;
     }
     bool operator<(const Playlist &other) const
     {
         return id < other.id;
     }
-    
+
     bool operator>(const Playlist &other) const
     {
         return id > other.id;
@@ -455,8 +470,21 @@ public:
         return id == other.id;
     }
     AVL<T> *get_songs_tree() const { return playlist_root; }
-    void set_songs_tree(AVL<T> *node) { playlist_root = node; }
+    void set_songs_tree(AVL<T> *node)
+    {
+        playlist_root = node;
+    }
     T get_id() const { return id; }
+    Playlist &operator=(const Playlist &other)
+    {
+        if (this != &other)
+        {
+            this->id = other.id;
+            this->info = other.info;
+            // Do NOT copy playlist_root pointer!
+        }
+        return *this;
+    }
 };
 
 template <class T>
@@ -468,12 +496,11 @@ private:
     int plays;
 
 public:
-    Song(T ID, int plays) : AVLNode<T>(ID, plays) {}
+    Song(T ID, int plays) : AVLNode<T>(ID, plays), song_root(nullptr), id(ID), plays(plays) {}
     ~Song()
     {
         delete song_root;
     }
-    // < operator for get by plays
     bool operator<(const Song &other) const
     {
         return plays < other.plays;
@@ -531,7 +558,7 @@ public:
         }
         return size;
     }
-    static AVLNode<T> *list2tree(linkedListNode<T> *head, int size)
+    static AVLNode<T> *list2tree(linkedListNode<T> *&head, int size)
     {
         if (size <= 0 || head == nullptr)
         {
