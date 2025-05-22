@@ -23,10 +23,11 @@ def run_test(exe_file, test_id, tests_dir):
         return
 
     # Execute the compiled binary with a timeout
-    command = f"{exe_file}"
+    exe_file = "main.exe"  # or main.out if you're not renaming
+    exe_path = f".\\{exe_file}" if os.name == 'nt' else f"./{exe_file}"
     try:
         with open(input_file, "r") as stdin, open(result_file, "w") as stdout:
-            subprocess.run(command, stdin=stdin, stdout=stdout, timeout=TIMEOUT, shell=True, check=True)
+            subprocess.run(exe_file, stdin=stdin, stdout=stdout, timeout=TIMEOUT, shell=True, check=True)
     except subprocess.TimeoutExpired:
         print(f"Test {test_id} Failed: Execution timed out after {TIMEOUT} seconds.")
         return

@@ -6,8 +6,10 @@
 
 DSpotify::DSpotify()
 {
-    song_root = new AVL<int>();
-    playlist_root = new AVL<Playlist<int>>();
+    song_root = new AVL<Song<int> *>();
+    playlist_root = new AVL<Playlist<int> *>();
+    playlist_root->set_root(nullptr);
+    song_root->set_root(nullptr);
 }
 
 DSpotify::~DSpotify()
@@ -22,21 +24,18 @@ StatusType DSpotify::add_playlist(int playlistId)
     {
         return StatusType::INVALID_INPUT;
     }
-    if (playlist_root->find(playlistId) != nullptr)
+    Playlist<int> playlist_key(playlistId);
+    if (playlist_root->find(&playlist_key) != nullptr)
     {
         return StatusType::FAILURE;
     }
-
-    int res = playlist_root->insert(playlistId, 0);
+    Playlist<int> *playlist = new Playlist<int>(playlistId);
+    int res = playlist_root->insert(playlist, 0);
     if (res != 1)
     {
         return StatusType::FAILURE;
     }
-    if (res == 1)
-    {
-        playlist_root->get_root()->info = 1;
-        return StatusType::SUCCESS;
-    }
+
     return StatusType::SUCCESS;
 }
 
@@ -46,9 +45,13 @@ StatusType DSpotify::delete_playlist(int playlistId)
     {
         return StatusType::INVALID_INPUT;
     }
-    AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
-    if (playlist==nullptr){return StatusType::FAILURE;}
-    playlist_root->remove(playlistId);
+
+    Playlist<int> playlist_key(playlistId);
+    if (playlist_root->find(&playlist_key) == nullptr)
+    {
+        return StatusType::FAILURE;
+    }
+    playlist_root->remove(&playlist_key);
     return StatusType::SUCCESS;
 }
 
@@ -58,20 +61,20 @@ StatusType DSpotify::add_song(int songId, int plays)
     {
         return StatusType::INVALID_INPUT;
     }
-    if (song_root->find(songId) != nullptr)
+    Song<int> song_key(songId, 0);
+    if (song_root->find(&song_key) != nullptr)
     {
         return StatusType::FAILURE;
     }
 
-    
-    if (song_root->insert(songId, plays) != 1)
+    Song<int> *song = new Song<int>(songId, plays);
+    if (song_root->insert(song, plays) != 1)
     {
         return StatusType::FAILURE;
     }
 
     return StatusType::SUCCESS;
 }
-
 StatusType DSpotify::add_to_playlist(int playlistId, int songId)
 {
     if (playlistId <= 0 || songId <= 0)
@@ -79,36 +82,35 @@ StatusType DSpotify::add_to_playlist(int playlistId, int songId)
         return StatusType::INVALID_INPUT;
     }
 
-    AVLNode<int> *search = song_root->find(songId);
-
-    if (search != nullptr)
+    Song<int> song_key(songId, 0);
+    AVLNode<Song<int> *> *song_node = song_root->find(&song_key);
+    if (song_node == nullptr)
+    {
+        return StatusType::FAILURE; // Song must exist globally
+    }
+    Playlist<int> playlist_key(playlistId);
+    AVLNode<Playlist<int> *> *playlist_node = playlist_root->find(&playlist_key);
+    if (playlist_node == nullptr)
     {
         return StatusType::FAILURE;
     }
 
-    AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
-    if (playlist == nullptr)
+    Playlist<int> *playlist_data = playlist_node->data;
+
+    if (playlist_data->get_songs_tree()->find(songId) != nullptr)
     {
         return StatusType::FAILURE;
     }
 
-    Playlist<int> *song_in_playlist_node = &playlist->data;
-
-    if (song_in_playlist_node->get_songs_tree()->find(songId) != nullptr)
-    {
-        return StatusType::FAILURE;
-    }
-
-    int res = song_in_playlist_node->get_songs_tree()->insert(songId, 0);
+    int res = playlist_data->get_songs_tree()->insert(songId, 0);
     if (res != 1)
     {
         return StatusType::FAILURE;
     }
-    else if (res == 1)
-    {
-        song_in_playlist_node->playlist_refers++;
-        playlist->info++;
-    }
+
+    song_node->data->playlist_refers++;
+    playlist_data->info++;
+
     return StatusType::SUCCESS;
 }
 
@@ -118,23 +120,26 @@ StatusType DSpotify::delete_song(int songId)
     {
         return StatusType::INVALID_INPUT;
     }
-    AVLNode<int> *search = song_root->find(songId);
+    Song<int> song_key(songId, 0);
+    AVLNode<Song<int> *> *search = song_root->find(&song_key);
+
     if (search == nullptr)
     {
         return StatusType::FAILURE;
     }
-    if (search->playlist_refers > 0)
+    if (search->data->playlist_refers > 0)
     {
         return StatusType::FAILURE;
     }
-    int res = song_root->remove(songId);
+    int res = song_root->remove(&song_key);
     if (res != 1)
     {
         return StatusType::FAILURE;
     }
+    // Clean up memory to avoid leaks
+    delete search->data;
     return StatusType::SUCCESS;
 }
-
 
 StatusType DSpotify::remove_from_playlist(int playlistId, int songId)
 {
@@ -142,27 +147,28 @@ StatusType DSpotify::remove_from_playlist(int playlistId, int songId)
     {
         return StatusType::INVALID_INPUT;
     }
-    AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
+    Playlist<int> playlist_key(playlistId);
+    AVLNode<Playlist<int> *> *playlist = playlist_root->find(&playlist_key);
     if (playlist == nullptr)
     {
         return StatusType::FAILURE;
     }
-    AVLNode<int> *search = song_root->find(songId);
+    Song<int> song_key(songId, 0);
+    AVLNode<Song<int> *> *search = song_root->find(&song_key);
+
     if (search == nullptr)
     {
         return StatusType::FAILURE;
     }
-    Playlist<int> *playlist_node = &playlist->data;
+    Playlist<int> *playlist_node = playlist->data;
     int res = playlist_node->get_songs_tree()->remove(songId);
     if (res != 1)
     {
         return StatusType::FAILURE;
     }
-    else if (res == 1)
-    {
-        playlist_node->playlist_refers--;
-        playlist->info--;
-    }
+    // Only update if removal succeeded
+    search->data->playlist_refers--;
+    playlist_node->info--;
 
     return StatusType::SUCCESS;
 }
@@ -173,12 +179,14 @@ output_t<int> DSpotify::get_plays(int songId)
     {
         return StatusType::INVALID_INPUT;
     }
-    AVLNode<int> *search = song_root->find(songId);
+    Song<int> song_key(songId, 0);
+    AVLNode<Song<int> *> *search = song_root->find(&song_key);
+
     if (search == nullptr)
     {
         return StatusType::FAILURE;
     }
-    return search->info;
+    return search->data->plays;
     return StatusType::SUCCESS;
 }
 
@@ -188,12 +196,13 @@ output_t<int> DSpotify::get_num_songs(int playlistId)
     {
         return StatusType::INVALID_INPUT;
     }
-    AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
+    Playlist<int> playlist_key(playlistId);
+    AVLNode<Playlist<int> *> *playlist = playlist_root->find(&playlist_key);
     if (playlist == nullptr)
     {
         return StatusType::FAILURE;
     }
-    return playlist->info;
+    return playlist->data->info;
     return StatusType::SUCCESS;
 }
 
@@ -203,12 +212,13 @@ output_t<int> DSpotify::get_by_plays(int playlistId, int plays)
     {
         return StatusType::INVALID_INPUT;
     }
-    AVLNode<Playlist<int>> *playlist = playlist_root->find(playlistId);
+    Playlist<int> playlist_key(playlistId);
+    AVLNode<Playlist<int> *> *playlist = playlist_root->find(&playlist_key);
     if (playlist == nullptr)
     {
         return StatusType::FAILURE;
     }
-    AVL<int> *song = playlist->data.get_songs_tree();
+    AVL<int> *song = playlist->data->get_songs_tree();
     AVLNode<int> *search = song->find_by_info_ceiling(song->get_root(), plays);
     if (search == nullptr)
     {
@@ -221,35 +231,37 @@ output_t<int> DSpotify::get_by_plays(int playlistId, int plays)
 // אי אפשר להשתמש בווקטור רשימה תור וכו... לכן נעשה סוג של mergesort
 //  על הפליליסטים: נכניס כל אחד לרשימה מקושרת בצורה ממוינת על ידי אינאורדר
 // כמו המערך מצביעים בתרגול
-//ואז נפעיל את אלגוריתם המיון בדומה למרג' סורט לפי 
-//songid
-//במהלכו עבור דופליקציות נשנה את המצביע שסופר רפרנסים (חהחהחה רפרנס)
-//ככה שבכל כפילות נוריד 1 וגם בכל שיר שלא היה בראשון נוסיף 1 לגודל הפליליסט
-//בסוף את המערך הממוין נכניס לעץ מאוזן נחילף מצביעים ונמחק את הישן
-// סך הכל עוברים על 2 מערכים בגודל הפליליסט כמה פעמים 
-//O(n) 
-//בניית עץ חדש וגם מציאת השירים הכפולים 
-//O(n)
+// ואז נפעיל את אלגוריתם המיון בדומה למרג' סורט לפי
+// songid
+// במהלכו עבור דופליקציות נשנה את המצביע שסופר רפרנסים (חהחהחה רפרנס)
+// ככה שבכל כפילות נוריד 1 וגם בכל שיר שלא היה בראשון נוסיף 1 לגודל הפליליסט
+// בסוף את המערך הממוין נכניס לעץ מאוזן נחילף מצביעים ונמחק את הישן
+// סך הכל עוברים על 2 מערכים בגודל הפליליסט כמה פעמים
+// O(n)
+// בניית עץ חדש וגם מציאת השירים הכפולים
+// O(n)
 // וחיפוש הפליליסטים
 // O(log m )
-//total = O(logm + n) ;)
-
+// total = O(logm + n) ;)
 StatusType DSpotify::unite_playlists(int playlistId1, int playlistId2)
 {
     if (playlistId1 <= 0 || playlistId2 <= 0 || playlistId1 == playlistId2)
     {
         return StatusType::INVALID_INPUT;
     }
-    AVLNode<Playlist<int>> *playlist1 = playlist_root->find(playlistId1);
-    AVLNode<Playlist<int>> *playlist2 = playlist_root->find(playlistId2);
+    Playlist<int> playlist_key1(playlistId1);
+    Playlist<int> playlist_key2(playlistId2);
+    AVLNode<Playlist<int> *> *playlist1 = playlist_root->find(&playlist_key1);
+    AVLNode<Playlist<int> *> *playlist2 = playlist_root->find(&playlist_key2);
+
     if (playlist1 == nullptr || playlist2 == nullptr)
     {
         return StatusType::FAILURE;
     }
-    Playlist<int> &p1 = playlist1->data;
-    Playlist<int> &p2 = playlist2->data;
-    AVL<int> *playlist1_songs = p1.get_songs_tree();
-    AVL<int> *playlist2_songs = p2.get_songs_tree();
+    Playlist<int> *p1 = playlist1->data;
+    Playlist<int> *p2 = playlist2->data;
+    AVL<int> *playlist1_songs = p1->get_songs_tree();
+    AVL<int> *playlist2_songs = p2->get_songs_tree();
     linkedListNode<int> *head_p1 = nullptr;
     linkedListNode<int> *tail_p1 = nullptr;
     linkedListNode<int> *head_p2 = nullptr;
@@ -261,12 +273,12 @@ StatusType DSpotify::unite_playlists(int playlistId1, int playlistId2)
 
     int songs_from_p2 = 0;
 
-    while (head_p1&&head_p2)
+    while (head_p1 && head_p2)
     {
         if (head_p1->data < head_p2->data)
         {
-            linkedListNode<int>* node = new linkedListNode<int>(head_p1->data);
-            mergeAVLTools<int>::add_to_list(new_tree_head,new_tree_tail,node);
+            linkedListNode<int> *node = new linkedListNode<int>(head_p1->data);
+            mergeAVLTools<int>::add_to_list(new_tree_head, new_tree_tail, node);
             head_p1 = head_p1->next;
         }
         else if (head_p1->data > head_p2->data)
@@ -280,10 +292,11 @@ StatusType DSpotify::unite_playlists(int playlistId1, int playlistId2)
         {
             linkedListNode<int> *node = new linkedListNode<int>(head_p1->data);
             mergeAVLTools<int>::add_to_list(new_tree_head, new_tree_tail, node);
-            AVLNode<int>* global_song = song_root->find(head_p1->data);
-            if (global_song!= nullptr)
+            Song<int> song_key(head_p1->data, 0);
+            AVLNode<Song<int> *> *global_song = song_root->find(&song_key);
+            if (global_song != nullptr)
             {
-                global_song->playlist_refers--;
+                global_song->data->playlist_refers--;
             }
             head_p1 = head_p1->next;
             head_p2 = head_p2->next;
@@ -305,15 +318,15 @@ StatusType DSpotify::unite_playlists(int playlistId1, int playlistId2)
     }
 
     int new_tree_size = mergeAVLTools<int>::listSize(new_tree_head);
-    AVLNode<int>* new_root = mergeAVLTools<int>::list2tree(new_tree_head,new_tree_size);
+    AVLNode<int> *new_root = mergeAVLTools<int>::list2tree(new_tree_head, new_tree_size);
 
-    AVL<int>* new_tree = new AVL<int>();
+    AVL<int> *new_tree = new AVL<int>();
     new_tree->set_root(new_root);
-    p1.set_songs_tree(new_tree);
-    playlist1->info += songs_from_p2;
-
-    p2.set_songs_tree(nullptr);
-    playlist_root->remove(playlistId2);
+    p1->set_songs_tree(new_tree);
+    p1->info += songs_from_p2;
+    p2->set_songs_tree(nullptr);
+    playlist_root->remove(&playlist_key2);
+    delete p2; // Clean up memory for removed playlist
 
     linkedListNode<int> *tmp = new_tree_head;
     while (tmp)

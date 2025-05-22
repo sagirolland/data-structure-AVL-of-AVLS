@@ -1,14 +1,14 @@
-// 
+//
 // 234218 Data Structures 1.
 // Semester: 2025B (Spring).
 // Wet Exercise #1.
-// 
+//
 // The following header file contains all methods we expect you to implement.
 // You MAY add private methods and fields of your own.
 // DO NOT erase or modify the signatures of the public methods.
 // DO NOT modify the preprocessors in this file.
 // DO NOT use the preprocessors in your other code files.
-// 
+//
 
 #ifndef DSPOTIFY25SPRING_WET1_H_
 #define DSPOTIFY25SPRING_WET1_H_
@@ -19,13 +19,15 @@ template <class T>
 class AVL;
 template <class T>
 class Playlist;
+template <class T>
+class Song;
 
 class DSpotify
 {
 private:
-    AVL<Playlist<int>> *playlist_root;
-    AVL<int> *song_root;
-    
+    AVL<Playlist<int> *> *playlist_root;
+    AVL<Song<int> *> *song_root;
+
 public:
     // <DO-NOT-MODIFY> {
     DSpotify();

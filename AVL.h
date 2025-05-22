@@ -4,8 +4,6 @@ template <class T>
 struct AVLNode
 {
     T data;
-    int info = 0;
-    int playlist_refers = 0;
     AVLNode<T> *left;
     AVLNode<T> *right;
     AVLNode<T> *parent;
@@ -13,7 +11,7 @@ struct AVLNode
     int height_right;
     int bf = height_left - height_right;
 
-    AVLNode(T data, int info) : data(data), info(info), left(nullptr), right(nullptr), parent(nullptr), height_left(0),
+    AVLNode(T data, int info) : data(data), left(nullptr), right(nullptr), parent(nullptr), height_left(0),
                                 height_right(0)
     {
     }
@@ -78,7 +76,7 @@ private:
     AVLNode<T> *root;
 
 public:
-    AVL() { root = nullptr; };
+    AVL() { root = nullptr; }
 
     virtual ~AVL()
     {
@@ -115,7 +113,7 @@ public:
         AVLNode<T> *current = node;
         while (current != nullptr)
         {
-           
+
             current->update_height(current);
             int bf = current->bf;
 
@@ -271,8 +269,7 @@ public:
                 succ = succ->left;
             }
 
-            node->data=succ->data;
-            node->info = succ->info;
+            node->data = succ->data;
             remove(succ->data);
             rebalance(node);
             return 1;
@@ -305,27 +302,7 @@ public:
         }
         return node;
     }
-    AVLNode<T> *find_by_info_ceiling(AVLNode<int> *node, int plays)
-    {
-        AVLNode<int> *res = nullptr;
-        while (node != nullptr)
-        {
-            if (node->info == plays)
-            {
-                return node;
-            }
-            if (node->info > plays)
-            {
-                res = node;
-                node = node->left;
-            }
-            else
-            {
-                node = node->right;
-            }
-        }
-        return res;
-    }
+    AVLNode<T> *find_by_info_ceiling(AVLNode<T> *node, int plays);
 
     AVLNode<T> *rotate_left(AVLNode<T> *node)
     {
@@ -436,85 +413,108 @@ public:
 };
 
 template <class T>
-class Playlist : public AVLNode<T>
+class Playlist
 {
 public:
     T id;
     AVL<int> *playlist_root;
+    int info = 0;
 
-    Playlist(T ID) : AVLNode<T>(ID, 0), id(ID), playlist_root(new AVL<int>()) {}
+    Playlist(T ID) : id(ID), playlist_root(new AVL<int>()), info(0)
+    {
+    }
+
     ~Playlist()
     {
         delete playlist_root;
         playlist_root = nullptr;
     }
-    bool operator<(const Playlist &other) const
-    {
-        return id < other.id;
-    }
+    bool operator>(const Playlist *other) const { return id > other->id; }
 
-    bool operator>(const Playlist &other) const
-    {
-        return id > other.id;
-    }
-    bool operator>=(const Playlist &other) const
-    {
-        return id >= other.id;
-    }
-    bool operator<=(const Playlist &other) const
-    {
-        return id <= other.id;
-    }
-    bool operator==(const Playlist &other) const
-    {
-        return id == other.id;
-    }
-    AVL<T> *get_songs_tree() const { return playlist_root; }
-    void set_songs_tree(AVL<T> *node)
-    {
-        playlist_root = node;
-    }
+    bool operator<=(const Playlist *other) const { return id <= other->id; }
+
+    bool operator>=(const Playlist *other) const { return id >= other->id; }
+
+    bool operator<(const Playlist *other) const { return id < other->id; }
+    bool operator==(const Playlist *other) const { return id == other->id; }
+    AVL<int> *get_songs_tree() const { return playlist_root; }
+    void set_songs_tree(AVL<int> *node) { playlist_root = node; }
     T get_id() const { return id; }
-    Playlist &operator=(const Playlist &other)
-    {
-        if (this != &other)
-        {
-            this->id = other.id;
-            this->info = other.info;
-            // Do NOT copy playlist_root pointer!
-        }
-        return *this;
-    }
+    Playlist(const Playlist &) = delete;
+    Playlist &operator=(const Playlist &) = delete;
 };
 
 template <class T>
-class Song : public AVLNode<T>
+class Song
 {
-private:
+public:
     AVL<T> *song_root;
     T id;
     int plays;
+    int playlist_refers = 0;
 
-public:
-    Song(T ID, int plays) : AVLNode<T>(ID, plays), song_root(nullptr), id(ID), plays(plays) {}
+    Song(T ID, int plays) : id(ID), plays(plays), playlist_refers(0)
+    {
+        song_root = new AVL<T>();
+    }
     ~Song()
     {
         delete song_root;
     }
-    bool operator<(const Song &other) const
-    {
-        return plays < other.plays;
-    }
-    bool operator>(const Song &other) const
-    {
-        return plays > other.plays;
-    }
-    bool operator==(const Song &other) const
-    {
-        return id == other.id && plays == other.plays;
-    }
+
+    Song(const Song &) = delete;
+    Song &operator=(const Song &) = delete;
+
+    bool operator<(const Song &other) const { return id < other.id; }
+    bool operator>(const Song &other) const { return id > other.id; }
+    bool operator==(const Song &other) const { return id == other.id; }
 };
 
+template <class T>
+AVLNode<T> *AVL<T>::find_by_info_ceiling(AVLNode<T> *node, int plays)
+{
+    AVLNode<T> *res = nullptr;
+    while (node != nullptr)
+    {
+        if (node->data == plays)
+        {
+            return node;
+        }
+        if (node->data < plays)
+        {
+            res = node;
+            node = node->left;
+        }
+        else
+        {
+            node = node->right;
+        }
+    }
+    return res;
+}
+
+template <>
+AVLNode<Song<int>> *AVL<Song<int>>::find_by_info_ceiling(AVLNode<Song<int>> *node, int plays)
+{
+    AVLNode<Song<int>> *res = nullptr;
+    while (node != nullptr)
+    {
+        if (node->data.plays == plays)
+        {
+            return node;
+        }
+        if (node->data.plays < plays)
+        {
+            res = node;
+            node = node->left;
+        }
+        else
+        {
+            node = node->right;
+        }
+    }
+    return res;
+}
 template <class T>
 struct linkedListNode
 {

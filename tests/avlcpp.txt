@@ -36,11 +36,11 @@ AVLNode<T>* AVL<T>::find_by_info_ceiling(AVLNode<int> *node, int plays)
     AVLNode<int>* res = nullptr;
     while (node != nullptr)
     {
-        if (node->info == plays)
+        if (node->data.plays ==plays)
         {
             return node;
         }
-        if (node->info > plays)
+        if (node->.data.plays > plays)
         {
             res = node;
             node = node->left;
