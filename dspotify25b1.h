@@ -17,16 +17,14 @@
 
 template <class T>
 class AVL;
-template <class T>
 class Playlist;
-template <class T>
 class Song;
 
 class DSpotify
 {
 private:
-    AVL<Playlist<int> *> *playlist_root;
-    AVL<Song<int> *> *song_root;
+    AVL<Playlist*> *playlist_root;
+    AVL<Song*> *song_root;
 
 public:
     // <DO-NOT-MODIFY> {
