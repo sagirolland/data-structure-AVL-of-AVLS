@@ -6,7 +6,7 @@ add_song: SUCCESS
 get_num_songs: SUCCESS, 1
 add_song: SUCCESS
 add_to_playlist: SUCCESS
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 925774
 add_song: SUCCESS
 get_num_songs: SUCCESS, 2
 add_song: SUCCESS
@@ -34,7 +34,7 @@ add_playlist: SUCCESS
 add_song: SUCCESS
 get_plays: SUCCESS, 354
 add_to_playlist: SUCCESS
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 1040904
 delete_song: SUCCESS
 get_num_songs: SUCCESS, 1
 add_to_playlist: SUCCESS
@@ -59,7 +59,7 @@ add_song: SUCCESS
 add_song: SUCCESS
 get_num_songs: SUCCESS, 0
 add_song: SUCCESS
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 122918
 get_plays: SUCCESS, 354
 delete_song: SUCCESS
 add_song: SUCCESS
@@ -70,7 +70,7 @@ add_to_playlist: SUCCESS
 delete_song: SUCCESS
 add_to_playlist: SUCCESS
 get_num_songs: SUCCESS, 3
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 122918
 get_num_songs: SUCCESS, 3
 add_playlist: SUCCESS
 add_to_playlist: SUCCESS
@@ -89,7 +89,7 @@ get_num_songs: SUCCESS, 1
 get_num_songs: SUCCESS, 1
 add_song: SUCCESS
 add_to_playlist: SUCCESS
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 122918
 add_song: SUCCESS
 remove_from_playlist: FAILURE
 get_num_songs: SUCCESS, 1
@@ -113,7 +113,7 @@ get_num_songs: SUCCESS, 2
 get_num_songs: SUCCESS, 2
 get_num_songs: SUCCESS, 3
 add_to_playlist: SUCCESS
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 127770
 add_song: SUCCESS
 unite_playlists: SUCCESS
 get_plays: SUCCESS, 621
@@ -128,7 +128,7 @@ add_playlist: SUCCESS
 get_plays: SUCCESS, 890
 get_plays: SUCCESS, 621
 add_song: SUCCESS
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 127770
 get_num_songs: SUCCESS, 3
 add_song: SUCCESS
 add_song: SUCCESS
@@ -161,8 +161,8 @@ get_num_songs: SUCCESS, 2
 add_song: SUCCESS
 add_to_playlist: SUCCESS
 get_num_songs: SUCCESS, 10
-get_by_plays: FAILURE
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 934670
+get_by_plays: SUCCESS, 291191
 add_playlist: SUCCESS
 add_to_playlist: SUCCESS
 get_num_songs: SUCCESS, 4
@@ -174,7 +174,7 @@ add_song: SUCCESS
 get_num_songs: SUCCESS, 1
 add_playlist: SUCCESS
 get_plays: SUCCESS, 79
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 865101
 add_to_playlist: SUCCESS
 add_to_playlist: SUCCESS
 add_song: SUCCESS
@@ -197,14 +197,14 @@ add_to_playlist: SUCCESS
 add_song: SUCCESS
 remove_from_playlist: SUCCESS
 add_to_playlist: SUCCESS
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 565247
 remove_from_playlist: SUCCESS
 get_plays: SUCCESS, 250
 get_plays: SUCCESS, 785
 get_plays: SUCCESS, 312
 add_to_playlist: SUCCESS
 get_num_songs: SUCCESS, 10
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 1040904
 add_playlist: SUCCESS
 add_to_playlist: SUCCESS
 add_playlist: SUCCESS
@@ -230,7 +230,7 @@ get_plays: SUCCESS, 695
 add_to_playlist: SUCCESS
 add_to_playlist: SUCCESS
 add_to_playlist: SUCCESS
-get_by_plays: FAILURE
+get_by_plays: SUCCESS, 925774
 add_to_playlist: FAILURE
 add_playlist: SUCCESS
 get_plays: SUCCESS, 123

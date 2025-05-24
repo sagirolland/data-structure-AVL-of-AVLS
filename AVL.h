@@ -364,7 +364,43 @@ public:
 
     return rotate_right(node);
   }
+
+  // Static inorder traversal with callback and context
+  static void inorder_with_context(AVLNode<T> *node, void (*cb)(AVLNode<T> *, void *), void *ctx)
+  {
+      if (!node)
+          return;
+      inorder_with_context(node->left, cb, ctx);
+      cb(node, ctx);
+      inorder_with_context(node->right, cb, ctx);
+  }
 };
+
+struct PlaysSearchContext
+{
+    int plays;
+    int best_id;
+    int best_plays;
+    bool found;
+};
+
+static void find_by_plays_cb(AVLNode<Song *> *node, void *ctx)
+{
+    PlaysSearchContext *context = (PlaysSearchContext *)ctx;
+    int song_plays = node->data->plays;
+    int song_id = node->uid;
+    if (song_plays >= context->plays)
+    {
+        if (!context->found || song_plays < context->best_plays ||
+            (song_plays == context->best_plays && song_id < context->best_id))
+        {
+            context->best_plays = song_plays;
+            context->best_id = song_id;
+            context->found = true;
+        }
+    }
+    // Do NOT update anything if song_plays < context->plays!
+}
 
 template <class T>
 AVLNode<Song*> *AVL<T>::find_by_info_ceiling(AVLNode<Song*> *node, int plays) {

@@ -46,8 +46,12 @@ StatusType DSpotify::delete_playlist(int playlistId)
     {
         return StatusType::INVALID_INPUT;
     }
-
+    
     if (playlist_root->findwithint(playlistId) == nullptr)
+    {
+        return StatusType::FAILURE;
+    }
+    if(playlist_root->findwithint(playlistId)->data->size > 0)
     {
         return StatusType::FAILURE;
     }
@@ -99,7 +103,7 @@ StatusType DSpotify::add_to_playlist(int playlistId, int songId)
         return StatusType::FAILURE;
     }
 
-    Song*  song = new Song(songId);
+    Song*  song = song_node->data;
     AVL<Song*> *song_root = playlist_data->get_songs_tree();
     int res =song_root->insert(song, songId);
     if (res != 1)
@@ -163,7 +167,14 @@ StatusType DSpotify::remove_from_playlist(int playlistId, int songId)
 
 
     Playlist *playlist_node = playlist->data;
-    int res = playlist_node->get_songs_tree()->remove(songId);
+    AVL<Song *> *playlist_tree = playlist_node->get_songs_tree();
+    AVLNode<Song *> *song_in_playlist = playlist_tree->findwithint(songId);
+    if (song_in_playlist == nullptr || song_in_playlist->data != search->data)
+    {
+        return StatusType::FAILURE;
+    }
+
+    int res = playlist_tree->remove(songId);
     if (res != 1)
     {
         return StatusType::FAILURE;
@@ -210,27 +221,56 @@ output_t<int> DSpotify::get_num_songs(int playlistId)
     return StatusType::SUCCESS;
 }
 
+// output_t<int> DSpotify::get_by_plays(int playlistId, int plays)
+// {
+//     if (playlistId <= 0 || plays < 0)
+//     {
+//         return StatusType::INVALID_INPUT;
+//     }
+//     AVLNode<Playlist *> *playlist = playlist_root->findwithint(playlistId);
+//     if (playlist == nullptr)
+//     {
+//         return StatusType::FAILURE;
+//     }
+
+//     AVL<Song*> *song = playlist->data->playlist_song_tree_root;
+//     AVLNode<Song*> *search = song->find_by_info_ceiling(song->get_root(), plays);
+
+//     if (search == nullptr)
+//     {
+//         return StatusType::FAILURE;
+//     }
+//     return search->uid;
+//     return StatusType::SUCCESS;
+// }
 output_t<int> DSpotify::get_by_plays(int playlistId, int plays)
 {
     if (playlistId <= 0 || plays < 0)
-    {
         return StatusType::INVALID_INPUT;
-    }
+
     AVLNode<Playlist *> *playlist = playlist_root->findwithint(playlistId);
     if (playlist == nullptr)
-    {
         return StatusType::FAILURE;
-    }
 
-    AVL<Song*> *song = playlist->data->playlist_song_tree_root;
-    AVLNode<Song*> *search = song->find_by_info_ceiling(song->get_root(), plays);
-
-    if (search == nullptr)
-    {
+    AVL<Song *> *song_tree = playlist->data->get_songs_tree();
+    if (!song_tree)
         return StatusType::FAILURE;
-    }
-    return search->uid;
-    return StatusType::SUCCESS;
+
+    AVLNode<Song *> *root = song_tree->get_root();
+    if (!root)
+        return StatusType::FAILURE;
+
+    PlaysSearchContext context;
+    context.plays = plays;
+    context.best_id = -1;
+    context.best_plays = -1;
+    context.found = false;
+
+    AVL<Song *>::inorder_with_context(root, find_by_plays_cb, &context);
+
+    if (!context.found)
+        return StatusType::FAILURE;
+    return context.best_id;
 }
 
 // אי אפשר להשתמש בווקטור רשימה תור וכו... לכן נעשה סוג של mergesort
