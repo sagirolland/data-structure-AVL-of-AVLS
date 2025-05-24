@@ -1,8 +1,6 @@
 #ifndef AVL_H_
 #define AVL_H_
-#include <iostream>
 
-using namespace std;
 
 class Song {
 public:
